@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "hbs": "file://C:\\Users\\ianfabs\\Programming\\Deno\\hbs\\mod.ts"
+  }
+}
