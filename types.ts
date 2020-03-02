@@ -43,7 +43,7 @@ namespace Route {
       this.get(method).set(path, handler);
     } */
     add(method: Route.Method, path: Route.Path, ...fns: any[]) {
-      this.get(method).set(path, compose(...fns.reverse()));
+      this.get(method)?.set(path, compose(...fns.reverse()));
     }
   }
 }

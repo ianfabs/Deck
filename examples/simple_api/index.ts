@@ -1,5 +1,5 @@
 import {Server} from "../../mod.ts";
-import {render} from "https://deno.land/x/dejs@0.3.4/mod.ts";
+import {render} from "hbs";
 
 let app = new Server();
 app.set("view_engine", render);

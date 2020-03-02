@@ -16,6 +16,7 @@ export class Context {
   public request: ServerRequest;
   public response: Response = {};
   public headers: Headers = new Headers();
+  // @ts-ignore
   private _url: URL;
   public static renderer: (str: string, ctx: any) => string;
 
@@ -53,7 +54,7 @@ export class Context {
   }
   // Set the Content-Type header for the current context's response
   protected writeResponseContentType(contentType: string) {
-    this.response.headers.set("Content-Type", contentType);
+    this.response.headers?.set("Content-Type", contentType);
   }
   // Set the response status code
   protected writeResponseStatus(status: number | Status = Status.Ok) {
@@ -142,7 +143,7 @@ export class Context {
 
   async body(): Promise<Record<string, unknown> | string> {
     const request_body = decoder.decode(await Deno.readAll(this.request.body));
-    const mime = this.request.headers.get("Content-Type");
+    const mime = this.request.headers?.get("Content-Type") ?? "text";
     if (mime.includes("json")) return JSON.parse(request_body);
     else return request_body;
   }

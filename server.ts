@@ -10,6 +10,7 @@ export let defaultServerConfig: IServerConfig = {
 
 // Server
 export class Server extends Router {
+  // @ts-ignore
   public __server: IServer;
   public config: IServerConfig;
 
@@ -44,9 +45,10 @@ export class Server extends Router {
     for await (const request of this.__server) {
       console.info(`${request.method} "${request.url}"`);
 
-      const matchingRequestHandler = this.routes.get(request.method as Route.Method)?.get(request.url);
-
-      this.fulfillRequest(matchingRequestHandler, new Context(request))
+      const matchingRequestHandler = this.routes?.get(request.method as Route.Method)?.get(request.url);
+      if (matchingRequestHandler != undefined) {
+        this.fulfillRequest(matchingRequestHandler, new Context(request))
+      }
     }
   }
   /* This is an arrow function because, to my working knowledge, arrow functions are a lesser burden on the compiler, and this function

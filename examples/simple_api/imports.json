@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "hbs": "file:///home/fabs/Programming/hbs/mod.ts"
+  }
+}

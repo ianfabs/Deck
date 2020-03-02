@@ -39,7 +39,7 @@ class Router/*  implements IRouter */ {
     if (args[0] instanceof Router) {
       for (const [method, map] of args[0].routes.entries()) {
         map.forEach((handler, path) => {
-          this.routes.get(method).set(path, handler);
+          this.routes.get(method)?.set(path, handler);
         })
       }
     }
@@ -48,13 +48,13 @@ class Router/*  implements IRouter */ {
       let [prefix, router] = args;
       for (const [method, map] of router.routes.entries()) {
         map.forEach((__handler, __path) => {
-          this.routes.get(method).set(path.posix.join(prefix, __path), __handler);
+          this.routes.get(method)?.set(path.posix.join(prefix, __path), __handler);
         })
       }
     }
     // If args are an array of middlewares
     else if (args.every(Route.isMiddleware) ) {
-      args.forEach(fn => { this.middleware.push(fn) });
+      ( args as Route.Middleware[] ).forEach((fn: Route.Middleware) => { this.middleware.push(fn) });
     }
     // Throw an error if none of the following conditions work
     else throw new Error("Supplied arguments do not match the allowed types");
