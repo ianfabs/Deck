@@ -43,18 +43,19 @@ export class Server extends Router {
     this.__server = serve({ port: this.port });
     console.log("Sever available @ " + this.url);
     for await (const request of this.__server) {
+      let context = new Context(request);
       console.info(`${request.method} "${request.url}"`);
 
-      const matchingRequestHandler = this.routes?.get(request.method as Route.Method)?.get(request.url);
-      if (matchingRequestHandler != undefined) {
-        this.fulfillRequest(matchingRequestHandler, new Context(request))
+      const [success, requestHandler, rprms ] = this.lookup(request.method as Route.Method, request.url as string);
+      context.routeParams = rprms;
+
+      console.info(`success => ${success}`)
+      console.info(`requestHandler => ${requestHandler}`)
+      console.info(`routeParams => ${rprms}`)
+
+      if (success) {
+        requestHandler(context);
       }
     }
-  }
-  /* This is an arrow function because, to my working knowledge, arrow functions are a lesser burden on the compiler, and this function
-  does not need a local `this` as well */
-  fulfillRequest = (matchingRequestHandler: Route.Handler, context: Context) => {
-    if (!matchingRequestHandler) console.log("404 path not found");
-    else matchingRequestHandler(context);
   }
 }

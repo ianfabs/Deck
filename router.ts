@@ -1,5 +1,7 @@
 import { ServerRequest, compose, path } from "./deps.ts";
 import { Route, IRouter } from "./types.ts";
+import {parse} from "./lib/urlparser.ts";
+import { equal } from "https://deno.land/std/testing/asserts.ts";
 
 // request and result need their own types. next needs it's own type too
 
@@ -20,6 +22,9 @@ class Router/*  implements IRouter */ {
   - make Router a function
   - use Proxy on object
   - use Object.defineProperty(obj, prop, config) within function
+
+    It's been... well time has passed. I now see that while novel, doing any of the above would
+    make my code human-unfriendly.
   */
   get(__path: Route.Path, ...fns: any[]) {
     this.routes.add(Route.Method.GET, path.posix.join(this.prefix, __path), ...this.middleware, ...fns);
@@ -58,6 +63,27 @@ class Router/*  implements IRouter */ {
     }
     // Throw an error if none of the following conditions work
     else throw new Error("Supplied arguments do not match the allowed types");
+  }
+  
+  // Lookup template route
+  lookup(method: Route.Method, requested_url: string) {
+    let routesForMethod = this.routes.get(method)!;
+    let handler = routesForMethod?.get(requested_url);
+    let success = false;
+    let routeParams = null;
+    // Loop stuff
+    let keys = routesForMethod.keys();    
+    for (const key of keys) {
+      let psd = parse(requested_url, key);
+      if (!equal(psd, {})) {
+        // yay we have a match!
+        // return routesForMethod!.get(key)
+        routeParams = psd;
+        handler = routesForMethod!.get(key);
+      }
+    }
+    success = !!handler;
+    return [ success, handler, routeParams ];
   }
 }
 

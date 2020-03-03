@@ -8,6 +8,7 @@ import {
   encoder,
   decoder,
 } from "./deps.ts";
+import parse from "./lib/urlparser.ts";
 import { Route, Status, Deck } from "./types.ts";
 
 type ResponseBody = Pick<Response, 'body'>['body'];
@@ -19,6 +20,8 @@ export class Context {
   // @ts-ignore
   private _url: URL;
   public static renderer: (str: string, ctx: any) => string;
+
+  public routeParams: Record<string, unknown> = {};
 
   set url(v: string | URL) {
     this._url = v instanceof URL ? v : new URL(v);
