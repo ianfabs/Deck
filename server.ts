@@ -46,15 +46,14 @@ export class Server extends Router {
       let context = new Context(request);
       console.info(`${request.method} "${request.url}"`);
 
-      const [success, requestHandler, rprms ] = this.lookup(request.method as Route.Method, request.url as string);
-      context.routeParams = rprms;
+      const [success, handler, params ] = this.lookup(request.method as Route.Method, request.url as string);
+      context.routeParams = params;
 
-      console.info(`success => ${success}`)
-      console.info(`requestHandler => ${requestHandler}`)
-      console.info(`routeParams => ${rprms}`)
+      // console.info(`success => ${success}`)
+      // console.info(`routeParams => ${rprms}`)
 
       if (success) {
-        requestHandler(context);
+        handler(context);
       }
     }
   }

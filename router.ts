@@ -1,6 +1,6 @@
 import { ServerRequest, compose, path } from "./deps.ts";
 import { Route, IRouter } from "./types.ts";
-import {parse} from "./lib/urlparser.ts";
+import { parse } from "./lib/urlparser.ts";
 import { equal } from "https://deno.land/std/testing/asserts.ts";
 
 // request and result need their own types. next needs it's own type too
@@ -10,6 +10,7 @@ class Router/*  implements IRouter */ {
   public prefix: Route.Path;
   public routes: Route.IMap = new Route.IMap();
   public middleware: Route.Middleware[] = new Array<Route.Middleware>();
+  public memoizedTemplateRoutes: Map<string, { handler: Route.Handler, params: object }> = new Map();
 
   constructor(prefix?: Route.Path) {
     this.prefix = prefix ?? "";
@@ -67,23 +68,29 @@ class Router/*  implements IRouter */ {
   
   // Lookup template route
   lookup(method: Route.Method, requested_url: string) {
-    let routesForMethod = this.routes.get(method)!;
-    let handler = routesForMethod?.get(requested_url);
-    let success = false;
-    let routeParams = null;
-    // Loop stuff
-    let keys = routesForMethod.keys();    
-    for (const key of keys) {
-      let psd = parse(requested_url, key);
-      if (!equal(psd, {})) {
-        // yay we have a match!
-        // return routesForMethod!.get(key)
-        routeParams = psd;
-        handler = routesForMethod!.get(key);
+    if (this.memoizedTemplateRoutes.has(requested_url)) {
+      const {handler, params} = this.memoizedTemplateRoutes.get(requested_url)!;
+      return [true, handler, params];
+    } else {
+      let routesForMethod = this.routes.get(method)!;
+      let handler = routesForMethod?.get(requested_url);
+      let params = null;
+      // Loop stuff
+      let routes = routesForMethod.keys();    
+      if (handler == null) {
+        for (const route of routes) {
+          params = parse(requested_url, route);
+          if (!equal(params, {})) {
+            // yay we have a match!
+            handler = routesForMethod!.get(route)!;
+            this.memoizedTemplateRoutes.set(requested_url, {handler, params})
+          }
+        }
       }
+      
+      let success = !!handler;
+      return [ success, handler, params ];
     }
-    success = !!handler;
-    return [ success, handler, routeParams ];
   }
 }
 
